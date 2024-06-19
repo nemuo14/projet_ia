@@ -22,18 +22,6 @@ def carte_without_clusturing(data):
 def carte_KM(data,n):
     if 11>n>0:
         list_name = [str(i) for i in range(n)]
-    # if n==1:
-    #     list_name = ["arbres"]
-    # elif n==2:
-    #     list_name = ["petit", "grand"]
-    # elif n==3:
-    #     list_name = ["petit", "moyen", "grand"]
-    # elif n==4:
-    #     list_name = ["petit", "moyen-","moyen+", "grand"]
-    # elif n==5:
-    #     list_name = ["minuscule","petit", "moyen", "grand","immense"]
-    # elif 11>n>0:
-    #     list_name = [str(i) for i in range(n)]
     else:
         print("Veuillez choisir un nombre de cluster compris entre 1 et 10 compris")
         return False
@@ -57,8 +45,7 @@ def carte_KM(data,n):
     print("Le score Davies-Bouldin Index:", dbi_scr) #cluster bien formé si proche de 0
     print("Le score Within-cluster Sum of Squares:",wcss_scr) # un score faible indique des clusters plus compacte, pas de conculsion à tirer de ce score
 
-    data['cluster_name_numeric'] = pd.to_numeric(data['cluster_name'], errors='coerce') #colone temporaire pour trier le data en fonction de son cluster
-    data = data.sort_values(by='cluster_name_numeric').drop(columns=['cluster_name_numeric']) #ça a pour but de mettre la légende de forme croissante
+    data = calcul_label(data) #fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
     fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
     fig.update_layout(mapbox_style="open-street-map")
@@ -72,18 +59,6 @@ def carte_KM(data,n):
 def carte_BKM(data,n):
     if 11>n>0: #11 pour que chaque légende ait sa couleur, sinon on peut faire 39 clusters max
         list_name = [str(i) for i in range(n)]
-    # if n==1:
-    #     list_name = ["arbres"]
-    # elif n==2:
-    #     list_name = ["petit", "grand"]
-    # elif n==3:
-    #     list_name = ["petit", "moyen", "grand"]
-    # elif n==4:
-    #     list_name = ["petit", "moyen-","moyen+", "grand"]
-    # elif n==5:
-    #     list_name = ["minuscule","petit", "moyen", "grand","immense"]
-    # elif 11>n>0:
-    #     list_name = [str(i) for i in range(n)]
     else:
         print("Veuillez choisir un nombre de cluster compris entre 1 et 10 compris") #la aussi, que pour la beauté de la légende, sinon 39 max
         return False
@@ -105,8 +80,7 @@ def carte_BKM(data,n):
     print("Le score Davies-Bouldin Index:", dbi_scr) #cluster bien formé si proche de 0
     print("Le score Within-cluster Sum of Squares:",wcss_scr) # un score faible indique des clusters plus compacte, pas de conculsion à tirer de ce score
 
-    data['cluster_name_numeric'] = pd.to_numeric(data['cluster_name'], errors='coerce') #colone temporaire pour trier le data en fonction de son cluster
-    data = data.sort_values(by='cluster_name_numeric').drop(columns=['cluster_name_numeric']) #ça a pour but de mettre la légende de forme croissante
+    data = calcul_label(data)  # fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
     fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
     fig.update_layout(mapbox_style="open-street-map")
@@ -138,8 +112,7 @@ def carte_DB(data,r,min_samples):
     print("Le Silhouette Score:",silhouette_scr) #entre -1 et 1, proche de 1 => les arbres sont bien regroupés au sein de leur cluster
     print("Le score Davies-Bouldin Index:", dbi_scr) #cluster bien formé
 
-    data['cluster_name_numeric'] = pd.to_numeric(data['cluster_name'], errors='coerce') #colone temporaire pour trier le data en fonction de son cluster
-    data = data.sort_values(by='cluster_name_numeric').drop(columns=['cluster_name_numeric']) #ça a pour but de mettre la légende de forme croissante, plus lisible
+    data=calcul_label(data,valid_points) # fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
     fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
     fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0]) #affiche les valeurs aberrantes en noir
@@ -153,18 +126,6 @@ def carte_DB(data,r,min_samples):
 
 
 def carte_HDB(data,size,samples):
-    # if n==1:
-    #     list_name = ["arbres"]
-    # elif n==2:
-    #     list_name = ["petit", "grand"]
-    # elif n==3:
-    #     list_name = ["petit", "moyen", "grand"]
-    # elif n==4:
-    #     list_name = ["petit", "moyen-","moyen+", "grand"]
-    # elif n==5:
-    #     list_name = ["minuscule","petit", "moyen", "grand","immense"]
-    # elif 11>n>0:
-    #     list_name = [str(i) for i in range(n)]
     hdb = HDBSCAN(min_cluster_size=size,min_samples=samples) #On applique le model HDBScan
     cluster_labels=hdb.fit_predict(data) #On récupère les clusters via fit_predict
     data['cluster'] = cluster_labels
@@ -185,8 +146,7 @@ def carte_HDB(data,size,samples):
     print("Le Silhouette Score:",silhouette_scr) #entre -1 et 1, proche de 1 => les arbres sont bien regroupés au sein de leur cluster
     print("Le score Davies-Bouldin Index:", dbi_scr) #cluster bien formé si proche de 0
 
-    data['cluster_name_numeric'] = pd.to_numeric(data['cluster_name'], errors='coerce') #colone temporaire pour trier le data en fonction de son cluster
-    data = data.sort_values(by='cluster_name_numeric').drop(columns=['cluster_name_numeric']) #ça a pour but de mettre la légende de forme croissante
+    data=calcul_label(data,valid_points) # fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
     fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
     fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0])
@@ -197,6 +157,39 @@ def carte_HDB(data,size,samples):
     fig = px.scatter_3d(data, x='longitude', y='latitude', z='haut_tot', color='cluster_name',hover_name='haut_tot')
     fig.add_trace(px.scatter_3d(data[data['bruit']], x='longitude', y='latitude', z='haut_tot', hover_name="haut_tot",color_discrete_sequence=['black']).data[0])
     fig.show()
+
+
+def calcul_label(data,valid_points=pd.DataFrame()): #On va calculer le mode de chaque cluster
+    cluster_list = []
+    min_heights = []
+    max_heights = []
+    if (valid_points.empty): #cas où on ne fais pas de clustering Scan
+        valid_points=data
+    grouped = valid_points.groupby('cluster') #On les regoupes par cluster
+    for cluster, group in grouped:
+        cluster_list.append(cluster)
+        min_heights.append(group['haut_tot'].min()) #On ajoute dans la liste des max, le max de chaque cluster
+        max_heights.append(group['haut_tot'].max()) #pareil pour les min
+
+    cluster_ranges = pd.DataFrame({
+        'cluster': cluster_list,
+        'min': min_heights,
+        'max': max_heights
+    })
+    cluster_names = {}
+    for i, row in cluster_ranges.iterrows(): #on va assigner dans le DataFrame les max et min
+        cluster = row['cluster']
+        min_height = row['min']
+        max_height = row['max']
+        cluster_names[cluster] = f"{min_height}-{max_height}" #le format du label
+
+    data['cluster_name'] = data['cluster'].map(cluster_names) #on finit par mapper les mode correspondant
+
+    # data['cluster_name_numeric'] = pd.to_numeric(data['cluster_name'], errors='coerce') #colone temporaire pour trier le data en fonction de son cluster
+    # data = data.sort_values(by='cluster_name_numeric').drop(columns=['cluster_name_numeric']) #ça a pour but de mettre la légende de forme croissante, plus lisible
+    data=data.sort_values(by='haut_tot')
+    print(data)
+    return data
 
 
 def question(): #fonction qui demande à l'utilisateur ce qu'il veut faire
