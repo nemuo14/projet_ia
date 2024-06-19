@@ -231,27 +231,17 @@ def data_traitement(set_data):
         data = pd.read_csv('Data_Arbre.csv')
         cols = ["longitude", "latitude", "haut_tot"]
         new_data = data[cols]
-        print(new_data)
-        print(new_data.info())
-        print(new_data['haut_tot'].values)
         return new_data
     else:
         data=pd.read_csv('data_exported.csv')
         cols = ["X", "Y", "haut_tot"]
         new_data = data[cols]
-        crs_source = CRS.from_epsg(3949)  # Remplacez ceci par votre code EPSG source correct
-        crs_target = CRS.from_epsg(4326)  # EPSG:4326 pour WGS84
-        transformer = Transformer.from_crs(crs_source,crs_target)
-        print(new_data.info())
-        print(new_data['haut_tot'].values)
-        # Appliquer la transformation
-        new_data['latitude'], new_data['longitude'] = transformer.transform(new_data['X'].values, new_data['Y'].values)
-        print(new_data)
+        crs_source = CRS.from_epsg(3949) #code source
+        crs_target = CRS.from_epsg(4326)  #code recherché : EPSG:4326 pour WGS84
+        transformer = Transformer.from_crs(crs_source,crs_target) #On applique la transformation
+        new_data['latitude'], new_data['longitude'] = transformer.transform(new_data['X'].values, new_data['Y'].values) #on créé deux autres colones avec les vraies coordonnées
         new_data=new_data.drop(columns=['X'])
         new_data = new_data.drop(columns=['Y'])
-        print(new_data)
-        # Affichez le DataFrame avec les nouvelles coordonnées
-        print(new_data.info())
         return new_data
 
 
