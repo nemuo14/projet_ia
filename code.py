@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import MinMaxScaler
 
-data = pd.read_csv('Data_Arbre.csv')
+data = pd.read_csv('Besoin_Client_1/Data_Arbre.csv')
 
 #print(data["clc_quartier"]) #data est un dictionnaire / un data frame
 
