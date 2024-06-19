@@ -5,6 +5,7 @@ from sklearn.cluster import HDBSCAN
 from sklearn.cluster import DBSCAN
 from sklearn.metrics import silhouette_score, davies_bouldin_score
 import pandas as pd
+from pyproj import Transformer, CRS
 
 
 
@@ -196,12 +197,17 @@ def question(): #fonction qui demande à l'utilisateur ce qu'il veut faire
     clustering=3
     answer = 3
     precision = 3
+    set_data = 3
+    while (set_data!=0 and set_data!=1):
+        set_data=int(input("Voulez-vous utiliser notre dataset (tapez 0), ou celle des professeurs (tapez 1)?"))
+        if set_data != "":
+            set_data = int(set_data)
     while (clustering!=0 and clustering!=1):
         clustering=input("Voulez-vous simplement visualiser les arbres (tapez 0), ou faire du clustering (tapez 1)?")
         if clustering!="":
             clustering=int(clustering)
     if clustering==0:
-        return clustering,0,0
+        return set_data,clustering,0,0
     else:
         while (answer!=0 and answer!=1):
             answer=input("Voulez-vous faire un clustering avec tous les arbres (tapez 0), ou du clustering en enlevant les valeurs aberrantes ? (tapez 1)")
@@ -217,35 +223,55 @@ def question(): #fonction qui demande à l'utilisateur ce qu'il veut faire
                 precision = input("Voulez-vous utiliser du DBScan clustering (tapez 0), ou du HDBScan clustering ? (tapez 1)")
                 if precision != "":
                     precision = int(precision)
-        return clustering,answer,precision
+        return set_data,clustering,answer,precision
+
+
+def data_traitement(set_data):
+    if set_data:
+        data = pd.read_csv('Data_Arbre.csv')
+        cols = ["longitude", "latitude", "haut_tot"]
+        new_data = data[cols]
+        print(new_data)
+        print(new_data.info())
+        print(new_data['haut_tot'].values)
+        return new_data
+    else:
+        data=pd.read_csv('data_exported.csv')
+        cols = ["X", "Y", "haut_tot"]
+        new_data = data[cols]
+        crs_source = CRS.from_epsg(3949)  # Remplacez ceci par votre code EPSG source correct
+        crs_target = CRS.from_epsg(4326)  # EPSG:4326 pour WGS84
+        transformer = Transformer.from_crs(crs_source,crs_target)
+        print(new_data.info())
+        print(new_data['haut_tot'].values)
+        # Appliquer la transformation
+        new_data['latitude'], new_data['longitude'] = transformer.transform(new_data['X'].values, new_data['Y'].values)
+        print(new_data)
+        new_data=new_data.drop(columns=['X'])
+        new_data = new_data.drop(columns=['Y'])
+        print(new_data)
+        # Affichez le DataFrame avec les nouvelles coordonnées
+        print(new_data.info())
+        return new_data
+
 
 
 def main():
-    data = pd.read_csv('Data_Arbre.csv')
-    cols=["longitude","latitude","haut_tot"]
-    new_data=data[cols]
-    clus,ans,prec=question()
+    set_data,clus, ans, prec = question() # on récupère les réponses aux questions
+    data=data_traitement(set_data) #On prend la dataset demandée
     if clus:
         if ans:
             if prec:
-                carte_HDB(new_data,10,1) #cluster_size, min_samples , exemple : 10,1 #on ne retient pas ce model, base de donnée pas adaptée
+                carte_HDB(data,10,1) #cluster_size, min_samples ; exemple : 10,1 #on ne retient pas ce model, base de donnée pas adaptée
             else:
-                carte_DB(new_data, 0.2,20)  # rayon, min_samples , exemple : 0.2 et 20
+                carte_DB(data, 0.2,20)  # rayon, min_samples ; exemple : 0.2 et 20
         else:
             if prec:
-                carte_BKM(new_data,3)
+                carte_BKM(data,3) #nombre de cluster à choisir
             else:
-                carte_KM(new_data,10)
+                carte_KM(data,10) #nombre de cluster à choisir
     else:
-        carte_without_clusturing(new_data)
-
-
-
-    #carte_DB(new_data, 0.2,20)  # rayon, min_samples , exemple : 0.2 et 20
-    #carte_HDB(new_data,10,1) #cluster_size, min_samples , exemple : 10,1 #on ne retient pas ce model, base de donnée pas adaptée
-    #carte_BKM(new_data,3)
-    #carte_KM(new_data,10)
-    #carte_without_clusturing(new_data)
+        carte_without_clusturing(data)
     return 0
 
 
