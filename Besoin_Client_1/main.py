@@ -146,11 +146,11 @@ def carte_DB(data,r,min_samples):
 
     data=calcul_label(data,valid_points) # fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
-    fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
-    fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0]) #affiche les valeurs aberrantes en noir
-    fig.update_layout(mapbox_style="open-street-map")
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    fig.show()
+    # fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
+    # fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0]) #affiche les valeurs aberrantes en noir
+    # fig.update_layout(mapbox_style="open-street-map")
+    # fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    # fig.show()
 
     fig = px.scatter_3d(data, x='longitude', y='latitude', z='haut_tot', color='cluster_name',hover_name='haut_tot')
     fig.add_trace(px.scatter_3d(data[data['bruit']], x='longitude', y='latitude', z='haut_tot', hover_name="haut_tot",color_discrete_sequence=['black']).data[0]) #affiche les valeurs aberrantes en noir
@@ -179,11 +179,11 @@ def carte_HDB(data,size,samples):
 
     data=calcul_label(data,valid_points) # fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
-    fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
-    fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0])
-    fig.update_layout(mapbox_style="open-street-map")
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    fig.show()
+    # fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
+    # fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0])
+    # fig.update_layout(mapbox_style="open-street-map")
+    # fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    # fig.show()
 
     fig = px.scatter_3d(data, x='longitude', y='latitude', z='haut_tot', color='cluster_name',hover_name='haut_tot')
     fig.add_trace(px.scatter_3d(data[data['bruit']], x='longitude', y='latitude', z='haut_tot', hover_name="haut_tot",color_discrete_sequence=['black']).data[0])
@@ -229,6 +229,7 @@ def question(): #fonction qui demande à l'utilisateur ce qu'il veut faire
     clustering=3
     answer = 3
     precision = 3
+    cols=3
     set_data = 3
     while (set_data!=0 and set_data!=1):
         set_data=int(input("Voulez-vous utiliser notre dataset (tapez 0), ou celle des professeurs (tapez 1)?"))
@@ -255,18 +256,31 @@ def question(): #fonction qui demande à l'utilisateur ce qu'il veut faire
                 precision = input("Voulez-vous utiliser du DBScan clustering (tapez 0), ou du HDBScan clustering ? (tapez 1)")
                 if precision != "":
                     precision = int(precision)
-        return set_data,clustering,answer,precision
+            while (cols != 0 and cols != 1):
+                cols = input("Voulez-vous utiliser 1 variable (tapez 0), ou 3 variables ? (tapez 1)")
+                if cols != "":
+                    cols = int(cols)
+        return set_data,clustering,answer,precision,cols
 
 
 def data_traitement(set_data):
-    if set_data:
-        data = pd.read_csv('Data_Arbre.csv')
-        cols = ["longitude", "latitude", "haut_tot"]
+    print(set_data)
+    if set_data==1 or set_data==3:
+        data = pd.read_csv('Besoin_Client_1/Data_Arbre.csv')
+        if set_data==3:
+            print("oui je passe (=3)")
+            cols = ["longitude", "latitude", "haut_tot","tronc_diam","haut_tronc"]
+        else:
+            cols = ["longitude", "latitude", "haut_tot"]
         new_data = data[cols]
         return new_data
     else:
-        data=pd.read_csv('data_exported.csv')
-        cols = ["X", "Y", "haut_tot"]
+        data=pd.read_csv('Besoin_Client_1/data_exported.csv')
+        if set_data==0:
+            cols = ["X", "Y", "haut_tot"]
+        else:
+            print("oui je passe (=2)")
+            cols = ["X", "Y", "haut_tot","tronc_diam","haut_tronc"]
         new_data = data[cols]
         crs_source = CRS.from_epsg(3949) #code source
         crs_target = CRS.from_epsg(4326)  #code recherché : EPSG:4326 pour WGS84
@@ -276,22 +290,33 @@ def data_traitement(set_data):
         new_data = new_data.drop(columns=['Y'])
         return new_data
 
+
+
 def main():
-    set_data,clus, ans, prec = question() # on récupère les réponses aux questions
+    set_data,clus, ans, prec, cols= question() # on récupère les réponses aux questions
+    if cols: #si on prend plusieurs variables
+        set_data +=2
     data=data_traitement(set_data) #On prend la dataset demandée
-    if clus:
-        if ans:
-            if prec:
-                carte_HDB(data,10,1) #cluster_size, min_samples ; exemple : 10,1 #on ne retient pas ce model, base de donnée pas adaptée
+    if clus:#clustering ou non
+        if ans: #quel type de clustering
+            if prec: #quel model de clustering
+                if cols: #plusieurs variables ou non
+                    carte_HDB(data,14,1) #cluster_size, min_samples ; exemple : 10,1 #on ne retient pas ce model, base de donnée pas adaptée : 14,1
+                else:
+                    carte_HDB(data, 10, 1)
             else:
-                carte_DB(data, 0.2,20)  # rayon, min_samples ; exemple : 0.2 et 20
+                if cols:
+                    carte_DB(data, 2,20)  # rayon, min_samples ; exemple : 2,10 ; 1.5,1 ; 1.8,5 ;  |2,20 avec data prof|
+                else:
+
+                    carte_DB(data, 0.6,20) # meilleur score : 0.2,20 ; joli clustering : 0.6,20
         else:
-            if prec:
+            if prec==1:
                 carte_BKM(data,3) #nombre de cluster à choisir
             elif prec==0:
-                carte_KM(data,10) #nombre de cluster à choisir
+                carte_KM(data,3) #nombre de cluster à choisir
             else:
-                carte_AG(data,5) #nombre de cluster à choisir
+                carte_AG(data,3) #nombre de cluster à choisir
     else:
         carte_without_clusturing(data)
     return 0
