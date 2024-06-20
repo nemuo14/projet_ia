@@ -146,11 +146,11 @@ def carte_DB(data,r,min_samples):
 
     data=calcul_label(data,valid_points) # fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
-    # fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
-    # fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0]) #affiche les valeurs aberrantes en noir
-    # fig.update_layout(mapbox_style="open-street-map")
-    # fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    # fig.show()
+    fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
+    fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0]) #affiche les valeurs aberrantes en noir
+    fig.update_layout(mapbox_style="open-street-map")
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.show()
 
     fig = px.scatter_3d(data, x='longitude', y='latitude', z='haut_tot', color='cluster_name',hover_name='haut_tot')
     fig.add_trace(px.scatter_3d(data[data['bruit']], x='longitude', y='latitude', z='haut_tot', hover_name="haut_tot",color_discrete_sequence=['black']).data[0]) #affiche les valeurs aberrantes en noir
@@ -179,11 +179,11 @@ def carte_HDB(data,size,samples):
 
     data=calcul_label(data,valid_points) # fonction qui va mettre dans 'cluster_name' le mode de chaque cluster, et les tries pour bien afficher les légendes sur la carte
 
-    # fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
-    # fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0])
-    # fig.update_layout(mapbox_style="open-street-map")
-    # fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    # fig.show()
+    fig = px.scatter_mapbox(data, lat="latitude", lon="longitude", hover_data="haut_tot",color='cluster_name', zoom=12, height=700)
+    fig.add_trace(px.scatter_mapbox(data[data['bruit']], lat="latitude", lon="longitude",hover_name="haut_tot", color_discrete_sequence=['black']).data[0])
+    fig.update_layout(mapbox_style="open-street-map")
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.show()
 
     fig = px.scatter_3d(data, x='longitude', y='latitude', z='haut_tot', color='cluster_name',hover_name='haut_tot')
     fig.add_trace(px.scatter_3d(data[data['bruit']], x='longitude', y='latitude', z='haut_tot', hover_name="haut_tot",color_discrete_sequence=['black']).data[0])
@@ -264,11 +264,9 @@ def question(): #fonction qui demande à l'utilisateur ce qu'il veut faire
 
 
 def data_traitement(set_data):
-    print(set_data)
     if set_data==1 or set_data==3:
         data = pd.read_csv('Besoin_Client_1/Data_Arbre.csv')
         if set_data==3:
-            print("oui je passe (=3)")
             cols = ["longitude", "latitude", "haut_tot","tronc_diam","haut_tronc"]
         else:
             cols = ["longitude", "latitude", "haut_tot"]
@@ -279,7 +277,6 @@ def data_traitement(set_data):
         if set_data==0:
             cols = ["X", "Y", "haut_tot"]
         else:
-            print("oui je passe (=2)")
             cols = ["X", "Y", "haut_tot","tronc_diam","haut_tronc"]
         new_data = data[cols]
         crs_source = CRS.from_epsg(3949) #code source
@@ -294,7 +291,8 @@ def data_traitement(set_data):
 
 def main():
     set_data,clus, ans, prec, cols= question() # on récupère les réponses aux questions
-    if cols: #si on prend plusieurs variables
+    if cols==1: #si on prend plusieurs variables
+        print(" ba att wtf")
         set_data +=2
     data=data_traitement(set_data) #On prend la dataset demandée
     if clus:#clustering ou non
