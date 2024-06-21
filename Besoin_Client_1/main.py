@@ -307,7 +307,7 @@ def main():
                     carte_DB(data, 2,20)  # rayon, min_samples ; exemple : 2,10 ; 1.5,1 ; 1.8,5 ;  |2,20 avec data prof|
                 else:
 
-                    carte_DB(data, 0.6,20) # meilleur score : 0.2,20 ; joli clustering : 0.6,20
+                    carte_DB(data, 0.2,20) # meilleur score : 0.2,20 ; joli clustering : 0.6,20
         else:
             if prec==1:
                 carte_BKM(data,3) #nombre de cluster à choisir
